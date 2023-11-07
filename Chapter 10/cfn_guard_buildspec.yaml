@@ -1,0 +1,27 @@
+version: 0.2
+
+env:
+  variables:
+    ZAP_VERSION: 2.12.0
+    TARGET_URL: "<YOUR Target URL>"
+
+phases:
+  install:
+    commands:
+      - sudo yum install -y wget
+      - wget https://github.com/zaproxy/zaproxy/releases/download/v2.12.0/ZAP_2.12.0_Linux.tar.gz
+      - tar -xvf ZAP_2.12.0_Linux.tar.gz
+      - sudo mv ZAP_$ZAP_VERSION/ /usr/share/
+      - sudo ln -s /usr/share/ZAP_$ZAP_VERSION/zap.sh /usr/bin/zaproxy
+      - echo 'export ZAP_HOME="/usr/share/ZAP_$ZAP_VERSION"' | sudo tee -a /etc/environment
+      - source /etc/environment
+      - sudo amazon-linux-extras install java-openjdk11
+
+  build:
+    commands:
+      - /usr/share/ZAP_$ZAP_VERSION/zap.sh -cmd -quickurl $TARGET_URL -quickprogress -quickout /tmp/zap_scan_report.json
+
+  post_build:
+    commands:
+      - echo Uploading reports to S3
+      - aws s3 cp zap_scan_report.json s3://<bucket_name>/securityfingdings/zap_scan_report.json

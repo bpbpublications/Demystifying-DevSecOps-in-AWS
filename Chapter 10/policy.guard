@@ -1,0 +1,4 @@
+let aws_ecs_taskdefinition_resources = Resources.*[ Type == 'AWS::ECS::TaskDefinition' ]
+rule aws_ecs_taskdefinition when %aws_ecs_taskdefinition_resources !empty {
+  %aws_ecs_taskdefinition_resources.Properties.ContainerDefinitions[*].Privileged == false
+}

@@ -1,0 +1,15 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  TaskDefinition:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      ContainerDefinitions:
+        - Name: ecs-container
+          Image: nginx:latest
+          Memory: 512
+          PortMappings:
+            - ContainerPort: 80
+          Essential: true
+          Privileged: false
+          NetworkMode: host

@@ -1,0 +1,37 @@
+{
+    "generated_at": "2023-02-11T12:00:00Z",
+    "project_name": "SearchIn Webapp Scan",
+    "dependencies": [
+      {
+        "name": "Flask",
+        "version": "1.1.2",
+        "vulnerabilities": [
+          {
+            "identifier": "CVE-2018-1000030",
+            "cvss_score": 7.5,
+            "severity": "high",
+            "description": "A vulnerability has been identified in Flask where an attacker can inject malicious code into the template engine."
+          }
+        ]
+      },
+      {
+        "name": "Jinja2",
+        "version": "2.11.2",
+        "vulnerabilities": [
+          {
+            "identifier": "CVE-2019-10906",
+            "cvss_score": 9.0,
+            "severity": "critical",
+            "description": "A vulnerability has been identified in Jinja2 where an attacker can inject malicious code into a template and execute arbitrary code."
+          }
+        ]
+      }
+    ],
+    "summary": {
+      "dependencies_analyzed": 3,
+      "vulnerabilities_found": 2,
+      "critical_vulnerabilities": 1,
+      "high_vulnerabilities": 1
+    }
+  }
+  

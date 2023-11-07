@@ -1,0 +1,94 @@
+version: 0.2
+
+env:
+  variables:
+    SOURCE_CODE_REPOSITORY: "<Your AWS CodeCommit repository URL>"
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws --version
+      - $(aws ecr get-login --region us-west-2 --no-include-email)
+
+  build:
+    commands:
+      - echo Pulling source code from AWS CodeCommit...
+      - git clone $SOURCE_CODE_REPOSITORY source_code
+      - echo Starting OWASP Dependency Check
+      - echo Running OWASP Dependency Check
+      - docker run -v $(pwd):/source_code:/src owasp/dependency-check:5.3.3 --scan /src --format JSON --out dependency-check-report.json
+      - echo Build completed on date
+  post_build:
+    commands:
+      - echo Uploading reports to S3
+      - aws s3 cp dependency-check-report.json s3://<bucket_name>/securityfingdings/dependency-check-report.json
+
+
+
+
+      zap-cli start &
+      zap-cli status -t 60
+      zap-cli open-url $target-url
+      zap-cli spider $target-url
+      zap-cli active-scan --recursive $target-url
+      zap-cli report -f json -o /tmp/zap-dast-report.json
+
+
+
+      version: 0.2
+
+env:
+  variables:
+    ZAP_VERSION: 2.9.0
+
+phases:
+  install:
+    commands:
+      - sudo yum install -y wget
+      - wget https://github.com/zaproxy/zaproxy/releases/download/v$ZAP_VERSION/ZAP_$ZAP_VERSION_Linux.tar.gz
+      - tar -xvf ZAP_$ZAP_VERSION_Linux.tar.gz
+      - sudo mv ZAP_$ZAP_VERSION/ /usr/share/
+      - sudo ln -s /usr/share/ZAP_$ZAP_VERSION/zap.sh /usr/bin/zaproxy
+      - echo 'export ZAP_HOME="/usr/share/ZAP_$ZAP_VERSION"' | sudo tee -a /etc/environment
+      - source /etc/environment
+
+  pre_build:
+    commands:
+      - zaproxy &
+      - sleep 60
+      - zap-cli --zap-url http://localhost:8080 status -t 120
+
+  post_build:
+    commands:
+      - zap-cli --zap-url http://localhost:8080 alerts -o /tmp/zap_report.html
+
+
+
+version: 0.2
+
+env:
+  variables:
+    ZAP_VERSION: 2.12.0
+    TARGET_URL: "<YOUR Target URL>"
+
+phases:
+  install:
+    commands:
+      - sudo yum install -y wget
+      - wget https://github.com/zaproxy/zaproxy/releases/download/v2.12.0/ZAP_2.12.0_Linux.tar.gz
+      - tar -xvf ZAP_2.12.0_Linux.tar.gz
+      - sudo mv ZAP_$ZAP_VERSION/ /usr/share/
+      - sudo ln -s /usr/share/ZAP_$ZAP_VERSION/zap.sh /usr/bin/zaproxy
+      - echo 'export ZAP_HOME="/usr/share/ZAP_$ZAP_VERSION"' | sudo tee -a /etc/environment
+      - source /etc/environment
+      - sudo amazon-linux-extras install java-openjdk11
+
+  build:
+    commands:
+      - /usr/share/ZAP_$ZAP_VERSION/zap.sh -cmd -quickurl $TARGET_URL -quickprogress -quickout /tmp/zap_scan_report.json
+
+  post_build:
+    commands:
+      - echo Uploading reports to S3
+      - aws s3 cp zap_scan_report.json s3://<bucket_name>/securityfingdings/zap_scan_report.json

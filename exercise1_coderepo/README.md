@@ -1,0 +1,1 @@
+This is the client webapp of the SearchIn Organisation
